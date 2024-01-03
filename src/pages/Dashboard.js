@@ -8,6 +8,7 @@ import ChartLegend from '../components/Chart/ChartLegend';
 import PageTitle from '../components/Typography/PageTitle';
 import { ChatIcon, CartIcon, MoneyIcon, PeopleIcon } from '../icons';
 import RoundIcon from '../components/RoundIcon';
+import axios from 'axios';
 import response from '../utils/demo/tableData';
 import {
   TableBody,
@@ -60,16 +61,38 @@ function Dashboard() {
   }, [page]);
 
   const handleCreateCall = () => {
-    setData([newCall, ...data]); // Adiciona o novo chamado no início da tabela
-    setModalOpen(false); // Fecha o modal após criar o chamado
-    setNewCall({
-      name: '',
-      description: '',
-      status: 'open',
-      date: new Date().toISOString(),
-    });
+    axios.post('http://localhost:5000/api/createCall', newCall)
+      .then(response => {
+        console.log(response.data);
+        fetchData(); // Atualiza os dados após a criação do chamado
+        setModalOpen(false);
+        setNewCall({
+          name: '',
+          description: '',
+          status: 'open',
+          date: new Date().toISOString(),
+        });
+      })
+      .catch(error => {
+        console.error('Erro ao criar chamado', error);
+      });
   };
 
+  const fetchData = () => {
+    // Faça uma solicitação para obter dados do backend e atualizar o estado
+    axios.get('http://localhost:5000/api/getCalls')
+      .then(response => {
+        setData(response.data);
+      })
+      .catch(error => {
+        console.error('Erro ao obter dados', error);
+      });
+  };
+
+  useEffect(() => {
+    // Carregue os dados iniciais ao montar o componente
+    fetchData();
+  }, []);
 
   return (
     <>
